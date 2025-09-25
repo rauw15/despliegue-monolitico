@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: ${{ github.repository_owner }}/despliegue-monolitico
+  IMAGE_NAME: rauwm/despliegue-monolitico
 
 jobs:
   # Job de pruebas
@@ -128,7 +128,7 @@ jobs:
           chmod +x deploy.sh
           
           # Configurar variables de entorno
-          export DOCKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+          export DOCKER_IMAGE=rauwm/despliegue-monolitico:develop
           export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           export JWT_SECRET=${{ secrets.JWT_SECRET }}
           
