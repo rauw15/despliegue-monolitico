@@ -30,14 +30,8 @@ jobs:
     - name: Ejecutar npm audit
       run: npm audit --audit-level=moderate
 
-    # - name: Ejecutar Snyk para detectar vulnerabilidades
-    #   uses: snyk/actions/node@master
-    #   env:
-    #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-    #   with:
-    #     args: --severity-threshold=high
-    - name: Skipping Snyk scan (no token configured)
-      run: echo "Snyk scan skipped - no token configured"
+    - name: Snyk scan disabled
+      run: echo "Snyk scan disabled - no token configured"
 
   # Escaneo de seguridad de imagen Docker
   docker-scan:
@@ -59,7 +53,7 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Subir resultados de Trivy a GitHub Security
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
@@ -83,12 +77,12 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Inicializar CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+      uses: github/codeql-action/autobuild@v3
 
     - name: Realizar análisis CodeQL
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
