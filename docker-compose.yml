@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: despliegue_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: despliegue_monolitico
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d despliegue_monolitico"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Aplicación Node.js
+  app:
+    build: .
+    container_name: despliegue_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:password@postgres:5432/despliegue_monolitico
+      JWT_SECRET: desarrollo-secret-key
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    networks:
+      - app-network
+    command: npm run dev
+
+  # Redis para cache (opcional)
+  redis:
+    image: redis:7-alpine
+    container_name: despliegue_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
